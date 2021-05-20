@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><title>SSE Chat</title></head>
+<body>
+<!-- Пользовательский интерфейс чата сводится всего лишь
+    к простому полю ввода текста. -->
+<!-- Новые сообщения в чате будут вставляться перед этим полем ввода. -->
+<input id="input" style="width: 100%; padding: 10px; border: solid black 2px"/>
+<script>
+    // Позаботиться о некоторых деталях пользовательского интерфейса.
+    let nick = prompt('Enter your nickname');       // Получить прозвище пользователя.
+    let input = document.getElementById('input');   // Найти поле ввода.
+    input.focus();                                  // Установить клавиатурный фокус.
+
+    // Зарегистрировать прослушиватель для уведомления о новых сообщениях,
+    // используя EventSource.
+    let chat = new EventSource('/chat');
+    chat.addEventListener('chat', event => {        // Когда поступает сообщение чата,
+        let div = document.createElement('div');    // Создать элемент <div>.
+        div.append(event.data);                     // Добавить текст из сообщения,
+        input.before(div);                          // Добавить div перед input,
+        input.scrollIntoView();             // Гарантировать видимость элемента input.
+    });
+
+    // Отправить сообщения пользователя серверу, используя fetch () .
+    input.addEventListener('change', () => {    // Когда пользователь нажимает <Return>.
+        fetch('/chat', {                        // Запустить HTTP-запрос для этого URL.
+            method: 'POST',                     // Сделать его запросом POST с телом,
+            body: nick + ': ' + input.value     // установленным в прозвище
+                                                // и ввод пользователя.
+        })
+            .catch(e => console.error);         // Игнорировать ответ, но отображать
+                                                // любые ошибки.
+        input.value = '';                       // Очистить поле ввода.
+    });
+</script>
+</body>
+</html>
